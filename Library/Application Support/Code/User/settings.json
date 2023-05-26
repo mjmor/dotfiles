@@ -1,0 +1,55 @@
+{
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorStyle": "block-outline",
+  "html.mirrorCursorOnMatchingTag": true,
+  "editor.tabSize": 2,
+  "explorer.confirmDelete": false,
+  "workbench.iconTheme": "vscode-icons",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "typescript.validate.enable": false,
+  "javascript.validate.enable": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "explorer.confirmDragAndDrop": false,
+  "files.trimTrailingWhitespace": true,
+  "workbench.startupEditor": "newUntitledFile",
+  "css.lint.boxModel": "warning",
+  "css.lint.important": "warning",
+  "css.lint.validProperties": ["composes"],
+  "todohighlight.keywords": [
+    {
+      "text": "TODO (lowpri):",
+      "backgroundColor": "#FFFF00",
+      "color": "#000000",
+      "isWholeLine": true
+    },
+    {
+      "text": "TODO (midpri):",
+      "backgroundColor": "#FF7F00",
+      "color": "#000000",
+      "isWholeLine": true
+    },
+    {
+      "text": "TODO (highpri):",
+      "backgroundColor": "#FF0000",
+      "color": "#000000",
+      "isWholeLine": true
+    }
+  ],
+  "vsicons.dontShowNewVersionMessage": true,
+  "vim.useSystemClipboard": true,
+  "git.autofetch": true,
+  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3.11",
+  "security.workspace.trust.untrustedFiles": "open",
+  "git.confirmSync": false,
+  "latex-workshop.latex.autoClean.run": "onBuilt",
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "git.suggestSmartCommit": false,
+  "window.zoomLevel": 1,
+  "[erb]": {
+    "editor.defaultFormatter": "aliariff.vscode-erb-beautify"
+  }
+}

@@ -1,0 +1,10 @@
+[user]
+	email = mjmor@umich.edu
+	name = Maxwell Morgan
+[push]
+	default = simple
+[core]
+	excludesfile = ~/.gitignore
+[alias]
+	unstage = reset HEAD --
+	logv = log --graph
