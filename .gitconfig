@@ -7,4 +7,5 @@
 	excludesfile = ~/.gitignore
 [alias]
 	unstage = reset HEAD --
+	rollback = reset HEAD^
 	logv = log --graph
