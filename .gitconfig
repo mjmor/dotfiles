@@ -1,11 +1,17 @@
 [user]
-	email = mjmor@umich.edu
-	name = Maxwell Morgan
+    email = mjmor@umich.edu
+    name = Maxwell Morgan
 [push]
-	default = simple
+    default = simple
+    autoSetupRemote = true
 [core]
-	excludesfile = ~/.gitignore
+    excludesfile = ~/.gitignore
 [alias]
-	unstage = reset HEAD --
-	rollback = reset HEAD^
-	logv = log --graph
+    unstage = reset HEAD --
+    rollback = reset HEAD^
+    logv = log --graph
+    co = checkout
+[advice]
+    addIgnoredFile = false
+[pull]
+    rebase = true

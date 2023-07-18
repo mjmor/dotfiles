@@ -45,11 +45,13 @@
   "git.confirmSync": false,
   "latex-workshop.latex.autoClean.run": "onBuilt",
   "[python]": {
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "git.suggestSmartCommit": false,
-  "window.zoomLevel": 1,
   "[erb]": {
     "editor.defaultFormatter": "aliariff.vscode-erb-beautify"
-  }
+  },
+  "window.zoomLevel": 1,
+  "git.ignoreRebaseWarning": true
 }
