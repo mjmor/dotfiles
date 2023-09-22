@@ -1,11 +1,9 @@
-[user]
-    email = mjmor@umich.edu
-    name = Maxwell Morgan
 [push]
     default = simple
     autoSetupRemote = true
 [core]
     excludesfile = ~/.gitignore
+    autocrlf = input
 [alias]
     unstage = reset HEAD --
     rollback = reset HEAD^

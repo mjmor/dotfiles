@@ -44,14 +44,22 @@
   "security.workspace.trust.untrustedFiles": "open",
   "git.confirmSync": false,
   "latex-workshop.latex.autoClean.run": "onBuilt",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[python]": {
     "editor.formatOnType": true,
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "git.suggestSmartCommit": false,
   "[erb]": {
     "editor.defaultFormatter": "aliariff.vscode-erb-beautify"
   },
+  "git.suggestSmartCommit": false,
   "window.zoomLevel": 1,
-  "git.ignoreRebaseWarning": true
+  "git.ignoreRebaseWarning": true,
+  "prettier.prettierPath": "./node_modules/prettier",
+  "files.associations": {
+    "*.theme": "php",
+    "*.module": "php"
+  },
+  "[php]": {},
+  "gitlens.remotes": [{ "domain": "github.com", "type": "GitHub" }]
 }
