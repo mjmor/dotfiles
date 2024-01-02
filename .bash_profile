@@ -13,10 +13,12 @@ export PATH=/opt/homebrew/bin:$PATH
 export PATH=$HOME/Library/Python/3.9/bin:$PATH
 
 # Ruby path variables.
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
-export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3)"
+if command -v rbenv &> /dev/null && command -v brew &> /dev/null; then
+	export PATH="$HOME/.rbenv/bin:$PATH"
+	eval "$(rbenv init -)"
+	export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
+	export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3)"
+fi
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

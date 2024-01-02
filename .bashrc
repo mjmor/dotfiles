@@ -88,17 +88,11 @@ if [ -f /usr/bin/virtualenvwrapper.sh ]; then
     source /usr/bin/virtualenvwrapper.sh
 fi
 
-if [ `which javac` ]; then
+if command -v javac &> /dev/null ; then
     export CLASSPATH=~/.java_class/:.
 fi
 
 export PATH=$PATH:/usr/local/bin
-
-# specific if go lang is installed
-if ! type "go" > /dev/null; then
-    export GOPATH=~/go/
-    export PATH=$PATH:~/go/bin/
-fi
 
 # if scripts directory is there, add to path
 if [ -d ~/scripts ]; then
