@@ -1,3 +1,4 @@
 cache
 *.swp
 .DS_STORE
+.aws/credentials

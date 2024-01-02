@@ -59,14 +59,15 @@ alias firewall='iptables'
 alias cd..='cd ..'
 alias copy='xclip -selection clipboard'
 
-# git
+# git & development
 alias st='git status'
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+alias format='yarn prettier -w $(git ls-files -m) $(git diff --staged --name-only)'
 
 # vi to vim
 alias vi="/usr/bin/vim"
 
-alias dev="et $USER@$USER.sb.facebook.com:8080"
+# City of Detroit specific config
+# TODO: separate into own aliases file and only source if on work computer.
+alias uxds='cd ~/Projects/cod/uxds/'
+alias uxds-run='uxds && yarn storybook'
+alias detroitmi='cd ~/Projects/cod/detroitmi/'

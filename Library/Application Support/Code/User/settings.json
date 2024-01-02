@@ -12,7 +12,7 @@
   "javascript.validate.enable": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "explorer.confirmDragAndDrop": false,
-  "files.trimTrailingWhitespace": true,
+  // "files.trimTrailingWhitespace": true,
   "workbench.startupEditor": "newUntitledFile",
   "css.lint.boxModel": "warning",
   "css.lint.important": "warning",

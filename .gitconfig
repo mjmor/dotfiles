@@ -9,6 +9,7 @@
     rollback = reset HEAD^
     logv = log --graph
     co = checkout
+    bl = branch -l
 [advice]
     addIgnoredFile = false
 [pull]
