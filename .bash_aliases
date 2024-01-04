@@ -68,6 +68,6 @@ alias vi="/usr/bin/vim"
 
 # City of Detroit specific config
 # TODO: separate into own aliases file and only source if on work computer.
-alias uxds='cd ~/Projects/cod/uxds/'
+alias uxds='cd ~/Projects/uxds/'
 alias uxds-run='uxds && yarn storybook'
-alias detroitmi='cd ~/Projects/cod/detroitmi/'
+alias detroitmi='cd ~/Projects/detroitmi/'
