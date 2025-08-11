@@ -2,12 +2,11 @@
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.cursorBlinking": "smooth",
   "editor.cursorStyle": "block-outline",
-  "html.mirrorCursorOnMatchingTag": true,
+  "editor.linkedEditing": true,
   "editor.tabSize": 2,
   "explorer.confirmDelete": false,
-  "workbench.iconTheme": "vscode-icons",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "typescript.validate.enable": false,
   "javascript.validate.enable": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
@@ -44,7 +43,6 @@
   "security.workspace.trust.untrustedFiles": "open",
   "git.confirmSync": false,
   "latex-workshop.latex.autoClean.run": "onBuilt",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[python]": {
     "editor.formatOnType": true,
     "editor.defaultFormatter": "ms-python.black-formatter"
@@ -53,13 +51,54 @@
     "editor.defaultFormatter": "aliariff.vscode-erb-beautify"
   },
   "git.suggestSmartCommit": false,
-  "window.zoomLevel": 1,
   "git.ignoreRebaseWarning": true,
   "prettier.prettierPath": "./node_modules/prettier",
   "files.associations": {
     "*.theme": "php",
-    "*.module": "php"
+    "*.module": "php",
+    "*.twig.html": "twig",
+    "*.twig": "twig",
+    "*.html": "html"
   },
-  "[php]": {},
-  "gitlens.remotes": [{ "domain": "github.com", "type": "GitHub" }]
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+  "gitlens.remotes": [
+    {
+      "domain": "github.com",
+      "type": "GitHub"
+    }
+  ],
+  "window.zoomLevel": 1,
+  "emmet.includeLanguages": {
+    "twig": "html"
+  },
+  "workbench.editor.empty.hint": "hidden",
+  "remote.autoForwardPortsSource": "hybrid",
+  "settingsSync.ignoredSettings": [
+    "-php.validate.executablePath"
+  ],
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "diffEditor.ignoreTrimWhitespace": false
+  },
+  "redhat.telemetry.enabled": false,
+  "[twig]": {
+    "editor.defaultFormatter": "mblode.twig-language-2"
+  },
+  "files.eol": "\n",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "security.allowedUNCHosts": [
+    "wsl.localhost"
+  ],
+  "window.autoDetectColorScheme": true,
+  "liveServer.settings.port": 5173,
+  "explorer.confirmPasteNative": false,
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "python.analysis.typeCheckingMode": "standard",
+  "[csv]": {}
 }
