@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-DOTFILE_DIR=/home/max/Projects/dotfiles
+DOTFILE_DIR=$HOME/Projects/dotfiles
 HOME_DIR=$(eval echo ~$USER)
 
 if [ ! -d "$DOTFILE_DIR" ]; then
