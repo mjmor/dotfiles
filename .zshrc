@@ -16,7 +16,11 @@ setopt SHARE_HISTORY           # Share history between all sessions
 setopt interactivecomments
 
 # Lando
-export PATH="/home/max/.lando/bin:$PATH"; #landopath
+export PATH="$HOME/.lando/bin${PATH+:$PATH}"; #landopath
 
-
+# Yarn scripts
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# Go
+export GOPATH=$HOME/go       # Your workspace directory
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
