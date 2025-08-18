@@ -79,3 +79,12 @@ if [ -f ${DOTFILE_DIR}/.inputrc ]; then
 else 
     echo "Skipping input configs..."
 fi
+
+# Link VS Code user settings.
+if [ -d ${HOME}/Library/Application\ Support/Code/User ]; then
+    echo "Linking VS Code settings..."
+    ln -sf ${DOTFILE_DIR}/Library/Application\ Support/Code/User/settings.json ${HOME}/Library/Application\ Support/Code/User/settings.json
+    ln -sf ${DOTFILE_DIR}/Library/Application\ Support/Code/User/keybindings.json ${HOME}/Library/Application\ Support/Code/User/keybindings.json
+else
+    echo "Skipping VS Code settings..."
+fi
