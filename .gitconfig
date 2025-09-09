@@ -2,7 +2,7 @@
     default = simple
     autoSetupRemote = true
 [core]
-	excludesFile = ~/.git/.gitignore
+    excludesFile = ~/.git/.gitignore
     autocrlf = input
 [alias]
     unstage = reset HEAD --
@@ -15,4 +15,4 @@
 [pull]
     rebase = true
 [init]
-	defaultBranch = main
+    defaultBranch = main
