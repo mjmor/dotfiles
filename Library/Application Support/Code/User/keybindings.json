@@ -69,5 +69,13 @@
     {
         "key": "cmd+p",
         "command": "-workbench.action.quickOpen"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\\\r\n"
+        },
+        "when": "terminalFocus"
     }
 ]

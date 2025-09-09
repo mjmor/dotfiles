@@ -10,8 +10,6 @@ fi
 
 export PATH=/opt/homebrew/bin:$PATH
 
-export PATH=$HOME/Library/Python/3.9/bin:$PATH
-
 # Ruby path variables.
 if command -v rbenv &> /dev/null && command -v brew &> /dev/null; then
 	export PATH="$HOME/.rbenv/bin:$PATH"

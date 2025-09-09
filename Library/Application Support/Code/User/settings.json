@@ -100,5 +100,6 @@
     "editor.defaultFormatter": "vscode.html-language-features"
   },
   "python.analysis.typeCheckingMode": "standard",
-  "[csv]": {}
+  "[csv]": {},
+  "chat.commandCenter.enabled": false
 }

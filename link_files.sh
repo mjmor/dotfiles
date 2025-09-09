@@ -58,8 +58,8 @@ fi
 # Link git configs.
 if [ -d ${HOME_DIR}/.git ]; then
     echo "Linking git configs..."
-    ln -sf ${DOTFILE_DIR}/.gitconfig ${HOME_DIR}/.gitconfig
-    ln -sf ${DOTFILE_DIR}/.gitignore ${HOME_DIR}/.gitignore
+    ln -sf ${DOTFILE_DIR}/.gitconfig ${HOME_DIR}/.git/.gitconfig
+    ln -sf ${DOTFILE_DIR}/.gitignore ${HOME_DIR}/.git/.gitignore
 else
     echo "Skipping git configs..."
 fi
