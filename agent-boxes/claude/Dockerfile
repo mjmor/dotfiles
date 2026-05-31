@@ -56,8 +56,11 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
 # ── Agent user ────────────────────────────────────────────────────────────────
-RUN groupadd -g "${GID}" agent && \
-    useradd -m -u "${UID}" -g "${GID}" -s /bin/bash agent && \
+# GIDs like 20 (macOS staff) may already exist in Ubuntu (e.g. as dialout).
+# Skip groupadd if the GID is taken; useradd -g accepts a numeric GID directly.
+# --non-unique allows the UID if it happens to already exist in the base image.
+RUN getent group "${GID}" >/dev/null 2>&1 || groupadd -g "${GID}" agent && \
+    useradd --non-unique -m -u "${UID}" -g "${GID}" -s /bin/bash agent && \
     echo "agent ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent && \
     chmod 0440 /etc/sudoers.d/agent
 
