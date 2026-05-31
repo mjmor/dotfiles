@@ -33,9 +33,8 @@ RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz" \
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 # ── uv ────────────────────────────────────────────────────────────────────────
-RUN curl -fsSL https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/uv && \
-    mv /root/.local/bin/uvx /usr/local/bin/uvx 2>/dev/null || true
+RUN curl -fsSL https://astral.sh/uv/install.sh \
+    | UV_INSTALL_DIR=/usr/local/bin sh
 
 # ── gh CLI ────────────────────────────────────────────────────────────────────
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
