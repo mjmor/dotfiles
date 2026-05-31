@@ -42,10 +42,6 @@ echo ""
 
 # ── C: Colima ────────────────────────────────────────────────────────────────
 echo "==> [C] Colima"
-mkdir -p "${HOME}/.colima/default"
-cp "${SCRIPT_DIR}/config/colima.yaml" "${HOME}/.colima/default/colima.yaml"
-echo "  • Installed colima.yaml"
-
 if colima status 2>/dev/null | grep -q "Running"; then
     echo "  ✓ Colima already running"
 else
@@ -109,6 +105,14 @@ sed "s|https://127\.0\.0\.1:[0-9]*|https://${MINIKUBE_NET_IP}:8443|g" \
     "${HOME}/.kube/config" > "${KUBECONFIG_DEST}"
 chmod 600 "${KUBECONFIG_DEST}"
 echo "  ✓ Kubeconfig written → artifacts/kubeconfig-for-containers (server: ${MINIKUBE_NET_IP}:8443)"
+
+# Deploy into agent homes so containers can use it
+AGENT_KUBE="${HOME}/agent-homes/claude/.kube/config"
+if [[ -d "${HOME}/agent-homes/claude/.kube" ]]; then
+    cp "${KUBECONFIG_DEST}" "${AGENT_KUBE}"
+    chmod 600 "${AGENT_KUBE}"
+    echo "  ✓ Kubeconfig deployed → ~/agent-homes/claude/.kube/config"
+fi
 echo ""
 
 # ── F: Ollama launchd service ─────────────────────────────────────────────────
