@@ -1,0 +1,19 @@
+# Colima VM configuration
+# docs: https://github.com/abiosoft/colima/blob/main/docs/CONFIG.md
+#
+# vmType "vz" = Apple Virtualization Framework (the spec calls this "vmz")
+# rosetta enables x86_64 emulation for images that lack arm64 variants
+
+cpu: 6
+memory: 8       # GiB
+disk: 100       # GiB
+
+arch: aarch64
+runtime: docker
+vmType: vz
+rosetta: true
+
+network:
+  address: false  # VM routable IP not needed; containers reach host via host.docker.internal
+
+mountType: virtiofs
