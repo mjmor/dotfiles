@@ -18,10 +18,10 @@ Always-running Docker container that autonomously picks up GitHub issues, implem
 
 ## Prerequisites
 
+- `host-setup/bootstrap.sh` completed (sets up Colima, minikube, `agents-net`, kubeconfig)
 - Docker Desktop for Mac (or Docker Engine) with Compose V2
 - Tailscale account — generate a **reusable** auth key at `admin.tailscale.com → Settings → Keys`
-- `gh` CLI installed on your Mac (`brew install gh`)
-- SSH key in `~/.ssh/` with access to `github.com` (used for git clone/push)
+- SSH key in `~/.ssh/` with access to `github.com` (used for git clone/push inside the container)
 
 ---
 
@@ -32,7 +32,7 @@ Always-running Docker container that autonomously picks up GitHub issues, implem
 ```bash
 cd agent-boxes/claude
 cp .env.example .env
-# Edit .env — fill in TS_AUTHKEY, GITHUB_TOKEN, UID, GID
+# Edit .env — fill in TS_AUTHKEY, UID, GID
 ```
 
 Get your UID/GID:
@@ -41,22 +41,7 @@ id -u   # UID
 id -g   # GID
 ```
 
-### 2. Create the external Docker network (once per host)
-
-```bash
-docker network create agents-net
-```
-
-### 3. Authenticate gh CLI as the agent account
-
-The setup script forks and clones repos using `gh`. Log in as `max-ai-ast` before running it:
-
-```bash
-gh auth login
-# Choose GitHub.com → HTTPS → browser flow → log in as max-ai-ast
-```
-
-### 4. Run setup.sh
+### 2. Run setup.sh
 
 ```bash
 bash agent-boxes/claude/scripts/setup.sh
@@ -64,12 +49,14 @@ bash agent-boxes/claude/scripts/setup.sh
 
 This script is **idempotent** — safe to re-run at any time. It:
 - Creates `~/agent-homes/claude/` directory skeleton
-- Deploys config files, scripts, and the `gh-issue-impl` skill
-- Copies the kubeconfig from `host-setup/artifacts/kubeconfig` (if present)
-- Forks each configured repo into `max-ai-ast` (skips existing forks)
-- Clones each fork to `~/agent-homes/claude/workspace/<repo>/` (pulls if already cloned)
+- Deploys config files, scripts, and the `gh-issue-impl` skill from this repo
 
-### 5. Build and start the container
+> **Note on config syncing:** config files are copied (not symlinked) because symlink
+> targets outside `~/agent-homes/claude/` are unreachable from inside the container —
+> the bind mount only exposes that single directory tree. Re-run `setup.sh` to sync
+> changes from the repo to the deployed copies.
+
+### 3. Build and start the container
 
 ```bash
 cd agent-boxes/claude
@@ -78,7 +65,7 @@ docker compose up -d --build
 
 The **first start** takes a few extra minutes — the entrypoint bootstraps nvm, Node.js LTS, and Claude Code into the bind mount. Subsequent starts are fast.
 
-### 6. Authenticate Claude Code (one-time browser flow)
+### 4. Authenticate Claude Code (one-time browser flow)
 
 ```bash
 docker compose exec claude su -s /bin/bash -c 'claude login' agent
@@ -86,6 +73,21 @@ docker compose exec claude su -s /bin/bash -c 'claude login' agent
 ```
 
 Auth state is saved to `~/agent-homes/claude/.claude/` and persists across rebuilds.
+
+### 5. Authenticate gh CLI inside the container
+
+```bash
+docker compose exec claude su -s /bin/bash -c 'gh auth login' agent
+# Choose HTTPS + browser flow and log in as max-ai-ast
+```
+
+### 6. Fork and clone repos
+
+```bash
+docker compose exec claude su -s /bin/bash -c '/home/agent/scripts/setup-repos.sh' agent
+```
+
+This forks each repo in `config/env` into the `max-ai-ast` GitHub account (skips existing forks) and clones each fork to `/home/agent/workspace/<repo>/`. Safe to re-run after adding new repos.
 
 ### 7. Verify everything works
 
@@ -160,11 +162,15 @@ docker compose -f agent-boxes/claude/docker-compose.yml exec claude su -s /bin/b
      "some-org/new-repo"
    )
    ```
-2. Re-run `setup.sh` — it forks and clones the new entry, leaves existing ones untouched:
+2. Re-run `setup.sh` to sync the updated config to the bind mount:
    ```bash
    bash agent-boxes/claude/scripts/setup.sh
    ```
-3. Restart the container to pick up the updated config:
+3. Run `setup-repos.sh` inside the container to fork and clone the new repo:
+   ```bash
+   docker compose exec claude su -s /bin/bash -c '/home/agent/scripts/setup-repos.sh' agent
+   ```
+4. Restart the container to pick up the updated config:
    ```bash
    cd agent-boxes/claude && docker compose restart
    ```
@@ -185,11 +191,11 @@ docker compose restart   # entrypoint re-runs the bootstrap
 
 ### Updating the gh-issue-impl skill
 
-Edit `agent-boxes/claude/skills/gh-issue-impl.md`, then re-run:
+Edit `agent-boxes/claude/skills/gh-issue-impl.md`, then re-run `setup.sh`:
 ```bash
 bash agent-boxes/claude/scripts/setup.sh
 ```
-The skill file at `~/agent-homes/claude/.claude/skills/gh-issue-impl/SKILL.md` is always overwritten by `setup.sh`.
+The skill file at `~/agent-homes/claude/.claude/skills/gh-issue-impl/SKILL.md` is always overwritten on each run.
 
 ### Rotating the Tailscale auth key
 
@@ -235,7 +241,8 @@ Usually a missing or invalid `TS_AUTHKEY`. Check `.env`.
 - The state dir is `~/agent-homes/claude/.config/tailscale/` — delete it and restart if the node is stuck in a bad state
 
 **`kubectl get nodes` fails**
-- Kubeconfig at `~/agent-homes/claude/.kube/config` may be missing or point to `127.0.0.1` (the Mac loopback, unreachable from inside the container). Ensure minikube's kubeconfig uses the `agents-net` gateway IP or the Mac's Tailscale IP, then re-run `setup.sh`.
+- Kubeconfig is generated by `host-setup/bootstrap.sh` and written into `~/agent-homes/claude/.kube/config`. If missing, re-run `bootstrap.sh`.
+- If the kubeconfig points to `127.0.0.1` (Mac loopback), it won't be reachable from inside the container. `bootstrap.sh` rewrites the address to the `agents-net` gateway automatically.
 
 **claude or node not found in cron**
 - The entrypoint creates symlinks in `/usr/local/bin/` on each start. If missing, exec into the container and check `/home/agent/.nvm/` and `/home/agent/.claude/local/`.

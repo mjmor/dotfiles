@@ -5,9 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_BOXES_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-DOTFILES_DIR="$(cd "${AGENT_BOXES_DIR}/../.." && pwd)"
 AGENT_HOME="${HOME}/agent-homes/claude"
-HOST_SETUP_ARTIFACTS="${DOTFILES_DIR}/host-setup/artifacts"
 
 # Load REPOS and AGENT_GH_HANDLE from the canonical config
 source "${AGENT_BOXES_DIR}/config/env"
@@ -27,11 +25,17 @@ mkdir -p \
   "${AGENT_HOME}/workspace"
 chmod 700 "${AGENT_HOME}/.ssh"
 
-# ── Deploy config and scripts from repo (always overwrite) ───────────────────
+# ── Deploy config and scripts from repo ──────────────────────────────────────
+# Note: these files must be copied (not symlinked) because symlink targets
+# outside ~/agent-homes/claude/ are unreachable from inside the container —
+# the bind mount only exposes that single directory tree. Re-run setup.sh to
+# sync changes from the repo.
 echo "==> Deploying config files and scripts..."
 cp -f "${AGENT_BOXES_DIR}/config/env"               "${AGENT_HOME}/config/env"
 cp -f "${AGENT_BOXES_DIR}/scripts/impl-issues.sh"   "${AGENT_HOME}/scripts/impl-issues.sh"
+cp -f "${AGENT_BOXES_DIR}/scripts/setup-repos.sh"   "${AGENT_HOME}/scripts/setup-repos.sh"
 chmod +x "${AGENT_HOME}/scripts/impl-issues.sh"
+chmod +x "${AGENT_HOME}/scripts/setup-repos.sh"
 
 # Deploy skill file
 cp -f "${AGENT_BOXES_DIR}/skills/gh-issue-impl.md" \
@@ -46,59 +50,10 @@ else
   echo "    To reset: rm ${AGENT_HOME}/.claude/settings.json && ./setup.sh"
 fi
 
-# ── Kubeconfig ────────────────────────────────────────────────────────────────
-KUBECONFIG_SRC="${HOST_SETUP_ARTIFACTS}/kubeconfig"
-if [ -f "$KUBECONFIG_SRC" ]; then
-  echo "==> Copying kubeconfig..."
-  cp -f "$KUBECONFIG_SRC" "${AGENT_HOME}/.kube/config"
-  chmod 600 "${AGENT_HOME}/.kube/config"
-else
-  echo "==> WARN: kubeconfig not found at ${KUBECONFIG_SRC} — skipping."
-  echo "    Place the minikube kubeconfig there and re-run setup.sh to deploy it."
-fi
-
 # Create per-repo log directories
 for REPO in "${REPOS[@]}"; do
   mkdir -p "${AGENT_HOME}/logs/runs/$(basename "$REPO")"
 done
-
-# ── Repos: fork + clone ───────────────────────────────────────────────────────
-echo ""
-echo "==> Setting up repos (fork + clone as ${AGENT_GH_HANDLE})..."
-
-if ! gh auth status &>/dev/null; then
-  echo ""
-  echo "    WARN: gh CLI is not authenticated — skipping fork/clone."
-  echo "    Authenticate gh as the agent account, then re-run setup.sh:"
-  echo "      gh auth login   # log in as ${AGENT_GH_HANDLE}"
-  echo "      ./scripts/setup.sh"
-else
-  for REPO in "${REPOS[@]}"; do
-    REPO_NAME=$(basename "$REPO")
-    FORK_SLUG="${AGENT_GH_HANDLE}/${REPO_NAME}"
-    CLONE_DIR="${AGENT_HOME}/workspace/${REPO_NAME}"
-
-    # Fork if the fork does not already exist
-    if gh repo view "${FORK_SLUG}" &>/dev/null; then
-      echo "    [${REPO_NAME}] fork ${FORK_SLUG} already exists."
-    else
-      echo "    [${REPO_NAME}] forking ${REPO} → ${FORK_SLUG}..."
-      gh repo fork "${REPO}" --clone=false
-    fi
-
-    # Clone if the workspace does not already exist; pull if it does
-    if [ -d "${CLONE_DIR}/.git" ]; then
-      echo "    [${REPO_NAME}] already cloned — pulling latest..."
-      git -C "${CLONE_DIR}" pull --ff-only 2>/dev/null \
-        || echo "    [${REPO_NAME}] WARN: pull failed (dirty state?) — skipping."
-    else
-      echo "    [${REPO_NAME}] cloning git@github.com:${FORK_SLUG}.git..."
-      git clone "git@github.com:${FORK_SLUG}.git" "${CLONE_DIR}"
-      git -C "${CLONE_DIR}" remote add upstream "git@github.com:${REPO}.git" 2>/dev/null || true
-      echo "    [${REPO_NAME}] upstream remote → git@github.com:${REPO}.git"
-    fi
-  done
-fi
 
 # ── Done ─────────────────────────────────────────────────────────────────────
 echo ""
@@ -106,11 +61,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo " Setup complete. Next steps:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  1. Copy .env.example → .env and fill in values:"
-echo "     cp agent-boxes/claude/.env.example agent-boxes/claude/.env"
+echo "  1. Run host-setup/bootstrap.sh first (sets up minikube, kubeconfig, agents-net)."
 echo ""
-echo "  2. Create the external Docker network (once per host):"
-echo "     docker network create agents-net"
+echo "  2. Copy .env.example → .env and fill in values:"
+echo "     cp agent-boxes/claude/.env.example agent-boxes/claude/.env"
 echo ""
 echo "  3. Build and start the container:"
 echo "     cd agent-boxes/claude && docker compose up -d --build"
@@ -119,11 +73,12 @@ echo "  4. Authenticate Claude Code (one-time, opens browser):"
 echo "     docker compose exec claude su -s /bin/bash -c 'claude login' agent"
 echo "     Open the URL printed above in your browser on this Mac."
 echo ""
-echo "  5. Authenticate gh CLI as ${AGENT_GH_HANDLE} (one-time):"
+echo "  5. Authenticate gh CLI as ${AGENT_GH_HANDLE} inside the container:"
 echo "     docker compose exec claude su -s /bin/bash -c 'gh auth login' agent"
 echo "     Choose HTTPS + browser flow and log in as ${AGENT_GH_HANDLE}."
 echo ""
-echo "  6. If you skipped fork/clone above, re-run setup.sh after step 5."
+echo "  6. Fork and clone repos (runs inside the container):"
+echo "     docker compose exec claude su -s /bin/bash -c '/home/agent/scripts/setup-repos.sh' agent"
 echo ""
 echo "  7. Verify kubectl access:"
 echo "     docker compose exec claude su -s /bin/bash -c 'kubectl get nodes' agent"

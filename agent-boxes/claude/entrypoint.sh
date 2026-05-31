@@ -8,7 +8,6 @@ AGENT_ENV_FILE="/home/agent/.agent-env"
 # ── Write runtime secrets to a file so cron jobs (clean env) can source them ──
 {
   echo "export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}"
-  echo "export GITHUB_TOKEN=${GITHUB_TOKEN:-}"
 } > "$AGENT_ENV_FILE"
 chmod 600 "$AGENT_ENV_FILE"
 chown agent:agent "$AGENT_ENV_FILE"

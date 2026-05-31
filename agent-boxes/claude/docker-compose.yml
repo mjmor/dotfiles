@@ -15,7 +15,6 @@ services:
     cpus: "1.0"
     environment:
       - TS_AUTHKEY
-      - GITHUB_TOKEN
       - ANTHROPIC_API_KEY
 
 networks:
