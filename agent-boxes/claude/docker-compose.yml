@@ -12,7 +12,8 @@ services:
     volumes:
       - "${HOME}/agent-homes/claude:/home/agent"
     networks:
-      - agents-net
+      agents-net:
+        ipv4_address: 172.18.0.2
     restart: unless-stopped
     mem_limit: 2g
     cpus: "1.0"

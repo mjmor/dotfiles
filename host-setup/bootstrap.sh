@@ -78,6 +78,7 @@ else
     minikube start \
         --driver=docker \
         --network=agents-net \
+        --static-ip=172.18.0.10 \
         --memory="${MINIKUBE_MEMORY}" \
         --cpus="${MINIKUBE_CPUS}" \
         --disk-size=10g
@@ -109,6 +110,14 @@ sed "s|https://127\.0\.0\.1:[0-9]*|https://${MINIKUBE_NET_IP}:8443|g" \
     "${HOME}/.kube/config" > "${KUBECONFIG_DEST}"
 chmod 600 "${KUBECONFIG_DEST}"
 echo "  ✓ Kubeconfig written → artifacts/kubeconfig-for-containers (server: ${MINIKUBE_NET_IP}:8443)"
+
+# Deploy into agent homes so containers can use it
+AGENT_KUBE="${HOME}/agent-homes/claude/.kube/config"
+if [[ -d "${HOME}/agent-homes/claude/.kube" ]]; then
+    cp "${KUBECONFIG_DEST}" "${AGENT_KUBE}"
+    chmod 600 "${AGENT_KUBE}"
+    echo "  ✓ Kubeconfig deployed → ~/agent-homes/claude/.kube/config"
+fi
 echo ""
 
 # ── F: Ollama launchd service ─────────────────────────────────────────────────
