@@ -1,0 +1,62 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch",
+      "WebSearch",
+      "Bash(tree:*)",
+      "Bash(parquet-tools cat:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)",
+      "Bash(go build:*)",
+      "Bash(grep:*)",
+      "Bash(go vet:*)",
+      "Bash(go test:*)",
+      "Bash(golangci-lint run:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./config/credentials.json)",
+      "Read(./build)",
+      "Read(~/.aws/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.pgadmin/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/.gcp/**)"
+    ],
+    "defaultMode": "default",
+    "attribution": {
+      "commit": "",
+      "pr": ""
+    }
+  },
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowLocalBinding": true
+    },
+    "excludedCommands": [
+      "docker",
+      "git",
+      "gh"
+    ]
+  },
+  "autoUpdatesChannel": "latest",
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "effortLevel": "medium"
+}

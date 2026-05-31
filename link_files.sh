@@ -88,3 +88,12 @@ if [ -d ${HOME}/Library/Application\ Support/Code/User ]; then
 else
     echo "Skipping VS Code settings..."
 fi
+
+# Link Claude Code user settings.
+if [ -d ${HOME_DIR}/.claude ]; then
+    echo "Linking Claude Code settings..."
+    ln -sf ${DOTFILE_DIR}/claude-user/settings.json ${HOME_DIR}/.claude/settings.json
+    ln -sf ${DOTFILE_DIR}/claude-user/CLAUDE.md ${HOME_DIR}/.claude/CLAUDE.md
+else
+    echo "Skipping Claude Code settings..."
+fi

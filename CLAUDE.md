@@ -29,6 +29,8 @@ The script assumes the repo lives at `~/Projects/dotfiles`. It uses `ln -sf` (fo
 | `.inputrc` | `~/.inputrc` |
 | `Library/Application Support/Code/User/settings.json` | VS Code user settings |
 | `Library/Application Support/Code/User/keybindings.json` | VS Code keybindings |
+| `claude-user/settings.json` | `~/.claude/settings.json` (Claude Code user settings) |
+| `claude-user/CLAUDE.md` | `~/.claude/CLAUDE.md` (Claude Code global instructions) |
 
 `link_files.sh` skips a section silently if the target directory doesn't exist (e.g., no `~/.vim` dir → vim configs skipped).
 
