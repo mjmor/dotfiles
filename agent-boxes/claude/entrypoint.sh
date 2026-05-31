@@ -1,13 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-NVM_DIR="/home/agent/.nvm"
-NVM_VERSION="v0.40.1"
 AGENT_ENV_FILE="/home/agent/.agent-env"
 
 # ── Ensure the agent user owns the bind-mount root ───────────────────────────
-# Docker auto-creates the host directory as root if it doesn't already exist
-# (e.g. if setup.sh wasn't run first). This makes it writable for the agent user.
 chown agent:agent /home/agent
 
 # ── Write runtime secrets to a file so cron jobs (clean env) can source them ──
@@ -17,8 +13,7 @@ chown agent:agent /home/agent
 chmod 600 "$AGENT_ENV_FILE"
 chown agent:agent "$AGENT_ENV_FILE"
 
-# ── Start tailscaled first so the device registers quickly ────────────────────
-# (nvm bootstrap below can take several minutes on first start)
+# ── Start tailscaled (userspace networking — no TUN or NET_ADMIN needed) ──────
 mkdir -p /var/run/tailscale /home/agent/.config/tailscale
 chown agent:agent /home/agent/.config/tailscale
 
@@ -49,47 +44,6 @@ tailscale \
   --hostname=claude-code-agent
 
 echo "==> Tailscale up — device: claude-code-agent"
-
-# ── Bootstrap nvm + Node.js LTS + Claude Code on first start ──────────────────
-# Everything lands in /home/agent (the bind mount) so it persists across
-# container rebuilds. Subsequent starts skip this block.
-if [ ! -d "$NVM_DIR" ]; then
-  echo "==> First start: installing nvm ${NVM_VERSION}, Node.js LTS, and Claude Code..."
-
-  su -s /bin/bash agent -c "
-    set -euo pipefail
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh \
-      | NVM_DIR=${NVM_DIR} bash
-    source ${NVM_DIR}/nvm.sh
-    nvm install --lts
-    nvm alias default node
-    curl -fsSL https://claude.ai/install.sh | bash
-  "
-
-  echo "==> Bootstrap complete."
-fi
-
-# ── Create stable /usr/local/bin symlinks so cron PATH finds node/claude ──────
-NODE_BIN=$(su -s /bin/bash agent -c "
-  source ${NVM_DIR}/nvm.sh 2>/dev/null
-  nvm which default 2>/dev/null || true
-")
-if [ -n "$NODE_BIN" ] && [ -f "$NODE_BIN" ]; then
-  NODE_BIN_DIR=$(dirname "$NODE_BIN")
-  ln -sf "$NODE_BIN"                   /usr/local/bin/node
-  ln -sf "${NODE_BIN_DIR}/npm"         /usr/local/bin/npm  2>/dev/null || true
-  ln -sf "${NODE_BIN_DIR}/npx"         /usr/local/bin/npx  2>/dev/null || true
-fi
-
-# Anthropic installer places the binary in ~/.claude/local/
-for CLAUDE_CANDIDATE in \
-    "/home/agent/.claude/local/claude" \
-    "/home/agent/.local/bin/claude"; do
-  if [ -f "$CLAUDE_CANDIDATE" ]; then
-    ln -sf "$CLAUDE_CANDIDATE" /usr/local/bin/claude
-    break
-  fi
-done
 
 # ── Hand off to cron as PID 1 ─────────────────────────────────────────────────
 exec cron -f

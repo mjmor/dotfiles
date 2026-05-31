@@ -53,6 +53,33 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 # ── Tailscale ─────────────────────────────────────────────────────────────────
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
+# ── nvm + Node.js LTS ─────────────────────────────────────────────────────────
+# Installed system-wide to /opt/nvm (not in the bind mount) to avoid virtiofs
+# permission issues. Symlinks in /usr/local/bin make node/npm/npx available
+# to all users including cron.
+ARG NVM_VERSION=v0.40.1
+ENV NVM_DIR=/opt/nvm
+RUN mkdir -p "${NVM_DIR}" && \
+    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" \
+      | NVM_DIR="${NVM_DIR}" bash
+RUN bash -c " \
+    source ${NVM_DIR}/nvm.sh && \
+    nvm install --lts && \
+    nvm alias default node && \
+    NODE_BIN=\$(nvm which default) && \
+    ln -sf \${NODE_BIN}              /usr/local/bin/node && \
+    ln -sf \$(dirname \${NODE_BIN})/npm  /usr/local/bin/npm && \
+    ln -sf \$(dirname \${NODE_BIN})/npx  /usr/local/bin/npx"
+
+# ── Claude Code ───────────────────────────────────────────────────────────────
+# Installed as root; binary symlinked to /usr/local/bin/claude.
+# Auth state (~/.claude/) is written at runtime to /home/agent (bind mount)
+# by the agent user, keeping credentials out of the image.
+RUN curl -fsSL https://claude.ai/install.sh | bash
+RUN CLAUDE_BIN=$(find /root/.claude /root/.local -name "claude" -type f 2>/dev/null | head -1) && \
+    [ -n "${CLAUDE_BIN}" ] && ln -sf "${CLAUDE_BIN}" /usr/local/bin/claude || \
+    (echo "ERROR: claude binary not found after install" && exit 1)
+
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
 # pass the Mac GID because macOS GIDs overlap with Ubuntu system GIDs, and

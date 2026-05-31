@@ -64,8 +64,6 @@ cd agent-boxes/claude
 docker compose up -d --build
 ```
 
-The **first start** takes a few extra minutes — the entrypoint bootstraps nvm, Node.js LTS, and Claude Code into the bind mount. Subsequent starts are fast.
-
 ### 4. Authenticate Claude Code (one-time browser flow)
 
 ```bash
@@ -184,10 +182,9 @@ cd agent-boxes/claude
 docker compose up -d --build
 ```
 
-nvm, Node.js, and Claude Code live in the bind mount and are **not** rebuilt by Docker — they persist as-is. To force-reinstall them:
+nvm, Node.js, and Claude Code are baked into the image. To upgrade them, rebuild:
 ```bash
-rm -rf ~/agent-homes/claude/.nvm ~/agent-homes/claude/.claude/local
-docker compose restart   # entrypoint re-runs the bootstrap
+docker compose up -d --build
 ```
 
 ### Updating the gh-issue-impl skill
