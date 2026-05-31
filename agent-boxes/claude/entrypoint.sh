@@ -5,6 +5,11 @@ NVM_DIR="/home/agent/.nvm"
 NVM_VERSION="v0.40.1"
 AGENT_ENV_FILE="/home/agent/.agent-env"
 
+# ── Ensure the agent user owns the bind-mount root ───────────────────────────
+# Docker auto-creates the host directory as root if it doesn't already exist
+# (e.g. if setup.sh wasn't run first). This makes it writable for the agent user.
+chown agent:agent /home/agent
+
 # ── Write runtime secrets to a file so cron jobs (clean env) can source them ──
 {
   echo "export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}"
