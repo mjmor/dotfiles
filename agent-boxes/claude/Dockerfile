@@ -75,10 +75,8 @@ RUN bash -c " \
 # Installed as root; binary symlinked to /usr/local/bin/claude.
 # Auth state (~/.claude/) is written at runtime to /home/agent (bind mount)
 # by the agent user, keeping credentials out of the image.
-RUN curl -fsSL https://claude.ai/install.sh | bash
-RUN CLAUDE_BIN=$(find /root/.claude /root/.local -name "claude" -type f 2>/dev/null | head -1) && \
-    [ -n "${CLAUDE_BIN}" ] && ln -sf "${CLAUDE_BIN}" /usr/local/bin/claude || \
-    (echo "ERROR: claude binary not found after install" && exit 1)
+RUN curl -fsSL https://claude.ai/install.sh | bash && \
+    ln -sf /root/.local/bin/claude /usr/local/bin/claude
 
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
