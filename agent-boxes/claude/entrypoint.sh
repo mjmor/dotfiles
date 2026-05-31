@@ -12,6 +12,39 @@ AGENT_ENV_FILE="/home/agent/.agent-env"
 chmod 600 "$AGENT_ENV_FILE"
 chown agent:agent "$AGENT_ENV_FILE"
 
+# ── Start tailscaled first so the device registers quickly ────────────────────
+# (nvm bootstrap below can take several minutes on first start)
+mkdir -p /var/run/tailscale /home/agent/.config/tailscale
+chown agent:agent /home/agent/.config/tailscale
+
+tailscaled \
+  --tun=userspace-networking \
+  --socket=/var/run/tailscale/tailscaled.sock \
+  --statedir=/home/agent/.config/tailscale \
+  &
+
+# Wait for the socket to be ready (up to 15 seconds)
+for i in $(seq 1 15); do
+  [ -S /var/run/tailscale/tailscaled.sock ] && break
+  echo "Waiting for tailscaled... (${i}/15)"
+  sleep 1
+done
+
+if [ ! -S /var/run/tailscale/tailscaled.sock ]; then
+  echo "ERROR: tailscaled socket not ready after 15 seconds" >&2
+  exit 1
+fi
+
+# Bring up Tailscale. Uses saved state if present; auth key is a fallback.
+tailscale \
+  --socket=/var/run/tailscale/tailscaled.sock \
+  up \
+  --authkey="${TS_AUTHKEY}" \
+  --ssh \
+  --hostname=claude-code-agent
+
+echo "==> Tailscale up — device: claude-code-agent"
+
 # ── Bootstrap nvm + Node.js LTS + Claude Code on first start ──────────────────
 # Everything lands in /home/agent (the bind mount) so it persists across
 # container rebuilds. Subsequent starts skip this block.
@@ -52,38 +85,6 @@ for CLAUDE_CANDIDATE in \
     break
   fi
 done
-
-# ── Start tailscaled (userspace networking — no TUN or NET_ADMIN needed) ──────
-mkdir -p /var/run/tailscale /home/agent/.config/tailscale
-chown agent:agent /home/agent/.config/tailscale
-
-tailscaled \
-  --tun=userspace-networking \
-  --socket=/var/run/tailscale/tailscaled.sock \
-  --statedir=/home/agent/.config/tailscale \
-  &
-
-# Wait for the socket to be ready (up to 15 seconds)
-for i in $(seq 1 15); do
-  [ -S /var/run/tailscale/tailscaled.sock ] && break
-  echo "Waiting for tailscaled... (${i}/15)"
-  sleep 1
-done
-
-if [ ! -S /var/run/tailscale/tailscaled.sock ]; then
-  echo "ERROR: tailscaled socket not ready after 15 seconds" >&2
-  exit 1
-fi
-
-# Bring up Tailscale. Uses saved state if present; auth key is a fallback.
-tailscale \
-  --socket=/var/run/tailscale/tailscaled.sock \
-  up \
-  --authkey="${TS_AUTHKEY}" \
-  --ssh \
-  --hostname=claude-code-agent
-
-echo "==> Tailscale up — device: claude-code-agent"
 
 # ── Hand off to cron as PID 1 ─────────────────────────────────────────────────
 exec cron -f
