@@ -1,5 +1,9 @@
+name: claude-code-agent
+
 services:
   claude:
+    image: claude-code-agent
+    container_name: claude-code-agent
     build:
       context: .
       args:
