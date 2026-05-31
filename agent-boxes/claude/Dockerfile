@@ -54,12 +54,11 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
 # ── Agent user ────────────────────────────────────────────────────────────────
-# GID is hardcoded to 1000 — safe in any Ubuntu base image (system GIDs stay
-# below 100; 1000 is the standard first-user range). We do NOT pass the Mac
-# GID because macOS GIDs overlap with Ubuntu system GIDs (e.g. macOS staff=20,
-# Ubuntu dialout=20). The Mac UID is passed so files written by the container
-# appear owned by the Mac user on the bind-mounted host path.
-RUN groupadd -g 1000 agent && \
+# GID is not specified — groupadd picks a free one automatically. We do NOT
+# pass the Mac GID because macOS GIDs overlap with Ubuntu system GIDs, and
+# installed packages can claim common GIDs like 1000. Only the UID is passed
+# so files written by the container appear owned by the Mac user on the host.
+RUN groupadd agent && \
     useradd --non-unique -m -u "${UID}" -g agent -s /bin/bash agent && \
     echo "agent ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent && \
     chmod 0440 /etc/sudoers.d/agent
