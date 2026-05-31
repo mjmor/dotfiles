@@ -3,5 +3,3 @@ cache
 .DS_STORE
 .aws/credentials
 .claude/
-claude.md
-

@@ -77,5 +77,15 @@
             "text": "\\\r\n"
         },
         "when": "terminalFocus"
+    },
+    {
+        "key": "shift+cmd+r",
+        "command": "-rerunSearchEditorSearch",
+        "when": "inSearchEditor"
+    },
+    {
+        "key": "shift+cmd+v",
+        "command": "-markdown.showPreview",
+        "when": "!notebookEditorFocused && editorLangId =~ /^(markdown|prompt|instructions|chatagent)$/"
     }
 ]
