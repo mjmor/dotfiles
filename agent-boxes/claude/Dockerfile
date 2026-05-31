@@ -52,36 +52,46 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 # ── Tailscale ─────────────────────────────────────────────────────────────────
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
-# ── nvm + Node.js LTS + Claude Code ──────────────────────────────────────────
-# All installed to /opt/nvm so binaries are accessible to all users.
-# Claude Code is installed via npm global so it lands under the nvm node prefix
-# alongside node/npm/npx — no per-user home directory involved.
-ARG NVM_VERSION=v0.40.1
-ENV NVM_DIR=/opt/nvm
-RUN mkdir -p "${NVM_DIR}" && \
-    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" \
-      | NVM_DIR="${NVM_DIR}" bash
-RUN bash -c " \
-    source ${NVM_DIR}/nvm.sh && \
-    nvm install --lts && \
-    nvm alias default node && \
-    npm install -g @anthropic-ai/claude-code && \
-    NODE_BIN=\$(nvm which default) && \
-    NODE_BIN_DIR=\$(dirname \${NODE_BIN}) && \
-    ln -sf \${NODE_BIN}                 /usr/local/bin/node && \
-    ln -sf \${NODE_BIN_DIR}/npm         /usr/local/bin/npm && \
-    ln -sf \${NODE_BIN_DIR}/npx         /usr/local/bin/npx && \
-    ln -sf \${NODE_BIN_DIR}/claude      /usr/local/bin/claude"
-
 # ── Agent user ────────────────────────────────────────────────────────────────
-# GID is not specified — groupadd picks a free one automatically. We do NOT
-# pass the Mac GID because macOS GIDs overlap with Ubuntu system GIDs, and
-# installed packages can claim common GIDs like 1000. Only the UID is passed
-# so files written by the container appear owned by the Mac user on the host.
+# Created before nvm so the install runs as this user, not root.
+# GID is not specified — groupadd picks a free one. Only UID is passed from the
+# Mac host so bind-mounted files are owned by the Mac user.
 RUN groupadd agent && \
     useradd --non-unique -m -u "${UID}" -g agent -s /bin/bash agent && \
     echo "agent ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent && \
     chmod 0440 /etc/sudoers.d/agent
+
+# ── nvm + Node.js LTS + Claude Code ──────────────────────────────────────────
+# Installed as the agent user into /opt/nvm so the agent owns the toolchain
+# and it's accessible to all users. /etc/profile.d/nvm.sh sources nvm for
+# every login shell (tailscale ssh, su -, etc.).
+ARG NVM_VERSION=v0.40.1
+ENV NVM_DIR=/opt/nvm
+RUN mkdir -p "${NVM_DIR}" && chown agent:agent "${NVM_DIR}"
+
+RUN su -s /bin/bash agent -c " \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh \
+      | NVM_DIR=${NVM_DIR} bash && \
+    source ${NVM_DIR}/nvm.sh && \
+    nvm install --lts && \
+    nvm alias default node && \
+    npm install -g @anthropic-ai/claude-code"
+
+# Stable symlinks in /usr/local/bin so all users and cron find the binaries
+# without needing to source nvm first.
+RUN bash -c " \
+    source ${NVM_DIR}/nvm.sh && \
+    NODE_BIN=\$(su -s /bin/bash agent -c 'source ${NVM_DIR}/nvm.sh && nvm which default') && \
+    NODE_BIN_DIR=\$(dirname \${NODE_BIN}) && \
+    ln -sf \${NODE_BIN}               /usr/local/bin/node && \
+    ln -sf \${NODE_BIN_DIR}/npm       /usr/local/bin/npm && \
+    ln -sf \${NODE_BIN_DIR}/npx       /usr/local/bin/npx && \
+    ln -sf \${NODE_BIN_DIR}/claude    /usr/local/bin/claude"
+
+# Source nvm for all login shells (tailscale ssh, su -, docker exec -it)
+RUN printf 'export NVM_DIR=%s\n[ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"\n' \
+    "${NVM_DIR}" > /etc/profile.d/nvm.sh && \
+    chmod 644 /etc/profile.d/nvm.sh
 
 # ── Crontab ───────────────────────────────────────────────────────────────────
 COPY cron/agent-cron /etc/cron.d/agent-cron
