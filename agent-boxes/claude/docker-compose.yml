@@ -4,7 +4,6 @@ services:
       context: .
       args:
         UID: "${UID}"
-        GID: "${GID}"
         GO_VERSION: "1.23.4"
     volumes:
       - "${HOME}/agent-homes/claude:/home/agent"

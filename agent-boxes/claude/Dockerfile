@@ -1,10 +1,8 @@
 ARG UID=1000
-ARG GID=1000
 
 FROM ubuntu:24.04
 
 ARG UID
-ARG GID
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -56,11 +54,13 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
 # ── Agent user ────────────────────────────────────────────────────────────────
-# GIDs like 20 (macOS staff) may already exist in Ubuntu (e.g. as dialout).
-# Skip groupadd if the GID is taken; useradd -g accepts a numeric GID directly.
-# --non-unique allows the UID if it happens to already exist in the base image.
-RUN getent group "${GID}" >/dev/null 2>&1 || groupadd -g "${GID}" agent && \
-    useradd --non-unique -m -u "${UID}" -g "${GID}" -s /bin/bash agent && \
+# GID is hardcoded to 1000 — safe in any Ubuntu base image (system GIDs stay
+# below 100; 1000 is the standard first-user range). We do NOT pass the Mac
+# GID because macOS GIDs overlap with Ubuntu system GIDs (e.g. macOS staff=20,
+# Ubuntu dialout=20). The Mac UID is passed so files written by the container
+# appear owned by the Mac user on the bind-mounted host path.
+RUN groupadd -g 1000 agent && \
+    useradd --non-unique -m -u "${UID}" -g agent -s /bin/bash agent && \
     echo "agent ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/agent && \
     chmod 0440 /etc/sudoers.d/agent
 

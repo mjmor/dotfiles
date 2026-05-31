@@ -81,8 +81,7 @@ tailscale \
   up \
   --authkey="${TS_AUTHKEY}" \
   --ssh \
-  --hostname=claude-code-agent \
-  --accept-routes
+  --hostname=claude-code-agent
 
 echo "==> Tailscale up — device: claude-code-agent"
 
