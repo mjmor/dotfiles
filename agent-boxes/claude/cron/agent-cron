@@ -1,5 +1,5 @@
 # Claude Code agent — impl-issues runs at 08:00 UTC (≈ 03:00 ET) Mon–Fri
 SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/opt/claude-install/.local/bin
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.local/bin
 
 0 8 * * 1-5 agent /home/agent/scripts/impl-issues.sh >> /home/agent/logs/cron.log 2>&1

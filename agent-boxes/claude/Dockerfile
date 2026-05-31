@@ -72,14 +72,13 @@ RUN bash -c " \
     ln -sf \$(dirname \${NODE_BIN})/npx  /usr/local/bin/npx"
 
 # ── Claude Code ───────────────────────────────────────────────────────────────
-# Install to /opt/claude-install (not /root) so the agent user can traverse the
-# path. Auth state (~/.claude/) is written at runtime to /home/agent (bind mount).
-ENV CLAUDE_INSTALL_HOME=/opt/claude-install
-RUN mkdir -p "${CLAUDE_INSTALL_HOME}" && \
-    HOME="${CLAUDE_INSTALL_HOME}" curl -fsSL https://claude.ai/install.sh | bash && \
-    find "${CLAUDE_INSTALL_HOME}" -type f -name "claude" -exec chmod a+rx {} \; && \
-    find "${CLAUDE_INSTALL_HOME}" -type d -exec chmod a+rx {} \;
-ENV PATH="${CLAUDE_INSTALL_HOME}/.local/bin:${PATH}"
+# The Anthropic installer always writes to the real root home (/root/.local/bin).
+# Make /root traversable and /root/.local world-readable so the agent user can
+# execute the binary. Auth state (~/.claude/) goes to /home/agent at runtime.
+RUN curl -fsSL https://claude.ai/install.sh | bash && \
+    chmod o+x /root && \
+    chmod -R a+rX /root/.local
+ENV PATH="/root/.local/bin:${PATH}"
 
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
