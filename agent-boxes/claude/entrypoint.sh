@@ -15,7 +15,7 @@ chown agent:agent "$AGENT_ENV_FILE"
 
 # ── Start tailscaled (userspace networking — no TUN or NET_ADMIN needed) ──────
 mkdir -p /var/run/tailscale /home/agent/.config/tailscale
-chown agent:agent /home/agent/.config/tailscale
+chown -R agent:agent /home/agent/.config
 
 tailscaled \
   --tun=userspace-networking \
