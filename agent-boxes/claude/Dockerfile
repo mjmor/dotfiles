@@ -72,11 +72,13 @@ RUN bash -c " \
     ln -sf \$(dirname \${NODE_BIN})/npx  /usr/local/bin/npx"
 
 # ── Claude Code ───────────────────────────────────────────────────────────────
-# Installed as root; binary symlinked to /usr/local/bin/claude.
-# Auth state (~/.claude/) is written at runtime to /home/agent (bind mount)
-# by the agent user, keeping credentials out of the image.
-RUN curl -fsSL https://claude.ai/install.sh | bash && \
-    ln -sf /root/.local/bin/claude /usr/local/bin/claude
+# Install to /opt/claude-install (not /root) so the agent user can traverse the
+# path. Auth state (~/.claude/) is written at runtime to /home/agent (bind mount).
+ENV CLAUDE_INSTALL_HOME=/opt/claude-install
+RUN mkdir -p "${CLAUDE_INSTALL_HOME}" && \
+    HOME="${CLAUDE_INSTALL_HOME}" curl -fsSL https://claude.ai/install.sh | bash && \
+    chmod -R a+rX "${CLAUDE_INSTALL_HOME}" && \
+    ln -sf "${CLAUDE_INSTALL_HOME}/.local/bin/claude" /usr/local/bin/claude
 
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
