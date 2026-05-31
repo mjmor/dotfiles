@@ -11,14 +11,15 @@ echo ""
 # ── 1. Lume VMs ─────────────────────────────────────────────────────────────
 echo "==> [1] Lume VMs"
 if command -v lume &>/dev/null; then
-    mapfile -t LUME_VMS < <(lume list 2>/dev/null | awk 'NR>1 && $1 != "" {print $1}' || true)
-    if [[ ${#LUME_VMS[@]} -eq 0 ]]; then
+    LUME_FOUND=0
+    while IFS= read -r vm; do
+        [[ -z "$vm" ]] && continue
+        LUME_FOUND=1
+        echo "  • Deleting Lume VM: ${vm}"
+        lume delete "${vm}" --force 2>/dev/null || lume delete "${vm}" 2>/dev/null || true
+    done < <(lume list 2>/dev/null | awk 'NR>1 && $1 != "" {print $1}' || true)
+    if [[ $LUME_FOUND -eq 0 ]]; then
         echo "  • No Lume VMs found"
-    else
-        for vm in "${LUME_VMS[@]}"; do
-            echo "  • Deleting Lume VM: ${vm}"
-            lume delete "${vm}" --force 2>/dev/null || lume delete "${vm}" 2>/dev/null || true
-        done
     fi
     echo "  ✓ Lume VMs cleaned"
 else
