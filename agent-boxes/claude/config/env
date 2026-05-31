@@ -1,0 +1,12 @@
+# Agent GitHub handle — forks are created under this account
+AGENT_GH_HANDLE="max-ai-ast"
+
+# Repos the agent will auto-implement issues for.
+# Format: "<org>/<repo>" (original upstream slug, not the fork).
+# To add a repo: append an entry here and re-run setup.sh.
+REPOS=(
+  "greenearth-social/ingex"
+  "greenearth-social/api"
+  "greenearth-social/engagement-prediction"
+  "georgetown-mdi/dgt-data-catalog"
+)
