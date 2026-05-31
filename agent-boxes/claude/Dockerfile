@@ -77,8 +77,9 @@ RUN bash -c " \
 ENV CLAUDE_INSTALL_HOME=/opt/claude-install
 RUN mkdir -p "${CLAUDE_INSTALL_HOME}" && \
     HOME="${CLAUDE_INSTALL_HOME}" curl -fsSL https://claude.ai/install.sh | bash && \
-    chmod -R a+rX "${CLAUDE_INSTALL_HOME}" && \
-    ln -sf "${CLAUDE_INSTALL_HOME}/.local/bin/claude" /usr/local/bin/claude
+    find "${CLAUDE_INSTALL_HOME}" -type f -name "claude" -exec chmod a+rx {} \; && \
+    find "${CLAUDE_INSTALL_HOME}" -type d -exec chmod a+rx {} \;
+ENV PATH="${CLAUDE_INSTALL_HOME}/.local/bin:${PATH}"
 
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
