@@ -42,6 +42,10 @@ echo ""
 
 # ── C: Colima ────────────────────────────────────────────────────────────────
 echo "==> [C] Colima"
+mkdir -p "${HOME}/.colima/default"
+cp "${SCRIPT_DIR}/config/colima.yaml" "${HOME}/.colima/default/colima.yaml"
+echo "  • Installed colima.yaml"
+
 if colima status 2>/dev/null | grep -q "Running"; then
     echo "  ✓ Colima already running"
 else
