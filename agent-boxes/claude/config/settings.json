@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(pytest *)",
+      "Bash(pyenv *)",
+      "Bash(pip *)",
+      "Bash(uv *)",
+      "Bash(go *)",
+      "Bash(kubectl *)",
+      "Bash(* --version)",
+      "Bash(* --help *)",
+      "WebFetch",
+      "Read"
+    ],
+    "deny": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(ssh *)",
+      "Bash(scp *)"
+    ],
+    "defaultMode": "bypassPermissions"
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark"
+}
