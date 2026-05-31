@@ -48,11 +48,31 @@ for REPO in "${REPOS[@]}"; do
 
   mkdir -p "$(dirname "$LOG_FILE")"
 
-  # Land on a clean default branch before handing off to claude
+  # Land on a clean default branch, then sync upstream → fork before handing off to claude
   cd "$REPO_DIR"
-  DEFAULT_BRANCH=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}' || echo "main")
-  git checkout "$DEFAULT_BRANCH" 2>/dev/null || true
-  git pull --ff-only 2>/dev/null || log "WARN: git pull failed (dirty state?), proceeding anyway"
+
+  # Resolve default branch from origin (fork); fall back to main
+  DEFAULT_BRANCH=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}')
+  DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
+
+  git checkout "$DEFAULT_BRANCH" 2>/dev/null \
+    || { log "WARN: could not checkout ${DEFAULT_BRANCH} for ${REPO}, skipping"; continue; }
+
+  # Fetch latest from upstream and merge into the fork's default branch
+  if git remote get-url upstream &>/dev/null; then
+    UPSTREAM_BRANCH=$(git remote show upstream 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}')
+    UPSTREAM_BRANCH="${UPSTREAM_BRANCH:-main}"
+    git fetch upstream "$UPSTREAM_BRANCH" 2>/dev/null \
+      || { log "WARN: fetch from upstream failed for ${REPO}, proceeding without sync"; }
+    git merge --ff-only "upstream/${UPSTREAM_BRANCH}" 2>/dev/null \
+      || git merge --no-edit "upstream/${UPSTREAM_BRANCH}" 2>/dev/null \
+      || log "WARN: merge from upstream/${UPSTREAM_BRANCH} failed for ${REPO}, proceeding without sync"
+    git push origin "$DEFAULT_BRANCH" 2>/dev/null \
+      || log "WARN: push of synced ${DEFAULT_BRANCH} to origin failed for ${REPO}"
+  else
+    log "WARN: no upstream remote found for ${REPO}, skipping upstream sync"
+    git pull --ff-only 2>/dev/null || log "WARN: git pull failed (dirty state?), proceeding anyway"
+  fi
 
   log "Invoking claude for ${REPO} → ${LOG_FILE}"
 
