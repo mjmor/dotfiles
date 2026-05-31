@@ -101,12 +101,14 @@ if [[ -z "${MINIKUBE_NET_IP}" ]]; then
 fi
 echo "  • Minikube agents-net IP: ${MINIKUBE_NET_IP}"
 
-# Rewrite kubeconfig server URL 127.0.0.1 → agents-net IP so containers can reach it
+# Rewrite kubeconfig server URL: 127.0.0.1:<host-port> → <agents-net-ip>:8443
+# The host-mapped port only works via 127.0.0.1; inside the network the API
+# server always listens on 8443 directly on the container.
 KUBECONFIG_DEST="${SCRIPT_DIR}/artifacts/kubeconfig-for-containers"
-sed "s|https://127\.0\.0\.1:|https://${MINIKUBE_NET_IP}:|g" \
+sed "s|https://127\.0\.0\.1:[0-9]*|https://${MINIKUBE_NET_IP}:8443|g" \
     "${HOME}/.kube/config" > "${KUBECONFIG_DEST}"
 chmod 600 "${KUBECONFIG_DEST}"
-echo "  ✓ Kubeconfig written → artifacts/kubeconfig-for-containers (server: ${MINIKUBE_NET_IP})"
+echo "  ✓ Kubeconfig written → artifacts/kubeconfig-for-containers (server: ${MINIKUBE_NET_IP}:8443)"
 echo ""
 
 # ── F: Ollama launchd service ─────────────────────────────────────────────────
@@ -175,8 +177,12 @@ echo "── Minikube ──"
 minikube status
 echo ""
 
-echo "── Kubernetes nodes (via container kubeconfig) ──"
-kubectl --kubeconfig="${SCRIPT_DIR}/artifacts/kubeconfig-for-containers" get nodes
+echo "── Kubernetes nodes (via host kubeconfig — 127.0.0.1) ──"
+kubectl get nodes
+echo ""
+echo "── Container kubeconfig server URL ──"
+grep "server:" "${SCRIPT_DIR}/artifacts/kubeconfig-for-containers"
+echo "  (reachable from containers on agents-net, not from the host)"
 echo ""
 
 echo "── Ollama models ──"
