@@ -78,6 +78,7 @@ else
     minikube start \
         --driver=docker \
         --network=agents-net \
+        --static-ip=172.18.0.10 \
         --memory="${MINIKUBE_MEMORY}" \
         --cpus="${MINIKUBE_CPUS}" \
         --disk-size=10g
