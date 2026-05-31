@@ -53,10 +53,10 @@ RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release
 # ── Tailscale ─────────────────────────────────────────────────────────────────
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
-# ── nvm + Node.js LTS ─────────────────────────────────────────────────────────
-# Installed system-wide to /opt/nvm (not in the bind mount) to avoid virtiofs
-# permission issues. Symlinks in /usr/local/bin make node/npm/npx available
-# to all users including cron.
+# ── nvm + Node.js LTS + Claude Code ──────────────────────────────────────────
+# All installed to /opt/nvm so binaries are accessible to all users.
+# Claude Code is installed via npm global so it lands under the nvm node prefix
+# alongside node/npm/npx — no per-user home directory involved.
 ARG NVM_VERSION=v0.40.1
 ENV NVM_DIR=/opt/nvm
 RUN mkdir -p "${NVM_DIR}" && \
@@ -66,19 +66,13 @@ RUN bash -c " \
     source ${NVM_DIR}/nvm.sh && \
     nvm install --lts && \
     nvm alias default node && \
+    npm install -g @anthropic-ai/claude-code && \
     NODE_BIN=\$(nvm which default) && \
-    ln -sf \${NODE_BIN}              /usr/local/bin/node && \
-    ln -sf \$(dirname \${NODE_BIN})/npm  /usr/local/bin/npm && \
-    ln -sf \$(dirname \${NODE_BIN})/npx  /usr/local/bin/npx"
-
-# ── Claude Code ───────────────────────────────────────────────────────────────
-# The Anthropic installer always writes to the real root home (/root/.local/bin).
-# Make /root traversable and /root/.local world-readable so the agent user can
-# execute the binary. Auth state (~/.claude/) goes to /home/agent at runtime.
-RUN curl -fsSL https://claude.ai/install.sh | bash && \
-    chmod o+x /root && \
-    chmod -R a+rX /root/.local
-ENV PATH="/root/.local/bin:${PATH}"
+    NODE_BIN_DIR=\$(dirname \${NODE_BIN}) && \
+    ln -sf \${NODE_BIN}                 /usr/local/bin/node && \
+    ln -sf \${NODE_BIN_DIR}/npm         /usr/local/bin/npm && \
+    ln -sf \${NODE_BIN_DIR}/npx         /usr/local/bin/npx && \
+    ln -sf \${NODE_BIN_DIR}/claude      /usr/local/bin/claude"
 
 # ── Agent user ────────────────────────────────────────────────────────────────
 # GID is not specified — groupadd picks a free one automatically. We do NOT
