@@ -28,6 +28,28 @@ requests, you should follow the below format for git commit messages and
 pull request descriptions. Pull requests should always be created in draft 
 mode.
 
+#### PR hygiene — my job to catch, not yours to review
+
+These apply to every repo. You should never be the one to find them.
+
+1. **Never `git add -A` or `git add .`** Stage explicit paths, or `git add -u`
+   for tracked files only. A blanket add sweeps in pre-existing untracked files
+   that have nothing to do with the change. Run `git status --porcelain` first
+   and treat every `??` line as "not mine unless I just created it".
+2. **Diff the branch before opening the PR, and again after any force-push or
+   merge.** `git diff --name-only <base>..<branch>` — every file must be one I
+   can justify out loud as part of this change. Anything else comes out.
+3. **One PR, one concern.** Design docs, assessments, write-ups and unrelated
+   refactors do not ride along in a code PR. Put prose on the issue, or give it
+   its own PR.
+4. **Run the project's *full* CI locally before opening the PR, then confirm it
+   passed.** Read `.github/workflows/` and run every check — not just the test
+   suite. Type checkers (pyright/mypy), linters and formatters are the ones I
+   skip and then fail on. After pushing, verify with `gh pr checks <n>`; a PR is
+   not "ready" until checks are green.
+5. **Stacked PRs:** re-check 2 and 4 on every branch in the stack after each
+   rebase or merge — a merge can pull unrelated files forward.
+
 Commit messages:
 ```txt
 <a brief, single line description; multiple remarks can be separated by 

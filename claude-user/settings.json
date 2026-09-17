@@ -11,7 +11,9 @@
       "Bash(grep:*)",
       "Bash(go vet:*)",
       "Bash(go test:*)",
-      "Bash(golangci-lint run:*)"
+      "Bash(golangci-lint run:*)",
+      "Bash(kubectl port-forward svc/greenearth-es-internal-lb 9200:9200 -n greenearth-prod)",
+      "Bash(gh issue view:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -41,7 +43,8 @@
     "superpowers@claude-plugins-official": true,
     "github@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "telegram@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,
@@ -55,8 +58,8 @@
       "gh"
     ]
   },
+  "effortLevel": "medium",
   "autoUpdatesChannel": "latest",
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "effortLevel": "medium"
+  "voiceEnabled": true
 }
