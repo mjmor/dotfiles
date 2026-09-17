@@ -47,10 +47,19 @@ fi
 # old color prompt
 # \[\e]0;\u@\h: \w\a\]\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$
 
+# Needed so $(parse_git_branch) re-evaluates on every prompt draw, not just once
+setopt PROMPT_SUBST
+
+parse_git_branch() {
+    local branch
+    branch=$(git branch --show-current 2>/dev/null)
+    [ -n "$branch" ] && echo " ($branch)"
+}
+
 if [ "$color_prompt" = yes ]; then
-    PROMPT='%(?.%F{green}√.%F{red}X%?)%f %B%F{240}%~%f%b %# '
+    PROMPT='%(?.%F{green}√.%F{red}X%?)%f %B%F{240}%~%f%b %F{cyan}%m%f%F{yellow}$(parse_git_branch)%f %# '
 else
-    PROMPT='%(?.√.X%?) %~ %# '
+    PROMPT='%(?.√.X%?) %~ %m$(parse_git_branch) %# '
 fi
 unset color_prompt force_color_prompt
 
