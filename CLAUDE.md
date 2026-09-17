@@ -34,6 +34,20 @@ The script assumes the repo lives at `~/Projects/dotfiles`. It uses `ln -sf` (fo
 
 `link_files.sh` skips a section silently if the target directory doesn't exist (e.g., no `~/.vim` dir → vim configs skipped).
 
+## Other Directories
+
+| Path | Purpose |
+|------|---------|
+| `agent-boxes/` | Container/VM config for isolated Claude Code agent environments |
+| `host-setup/` | Host machine setup scripts |
+
+## Unlinked Config Files
+
+These files exist in the repo but are **not** currently wired into `link_files.sh`:
+- `.chunkwmrc`, `.skhdrc` — chunkwm/skhd tiling window manager configs
+- `.yarnrc` — Yarn configuration
+- `.docker/` — Docker context config
+
 ## Shell Config Load Order
 
 `.zshrc` sources `.bash_profile`, which sources `.bashrc`. Aliases live in `.bash_aliases`, sourced from `.bashrc`. PATH additions and tool initializations (rbenv, nvm, pyenv, gcloud, Go, Yarn) are split across `.bash_profile` and `.zshrc` — check both when tracing a PATH issue.
